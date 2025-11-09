@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background: white;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 15px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .switch-mode {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .switch-mode a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .switch-mode a:hover {
+            text-decoration: underline;
+        }
+
+        .test-credentials {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .test-credentials strong {
+            color: #333;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>USDC Transfer</h1>
+        <p class="subtitle">Login to your account</p>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" />
+            </div>
+
+            <button type="submit" id="loginBtn">Login</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <div class="switch-mode">
+            Don't have an account? <a href="/signup.html">Sign up</a>
+        </div>
+
+        <div class="switch-mode" style="margin-top: 10px;">
+            <a href="/forgot-password.html" style="color: #667eea; text-decoration: none; font-size: 14px;">Forgot Password?</a>
+        </div>
+
+        <div class="test-credentials">
+            <strong>Test Account:</strong><br>
+            Email: <code>test@example.com</code><br>
+            Password: <code>test123</code>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const statusDiv = document.getElementById('status');
+
+            try {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="loading"></span> Logging in...';
+                statusDiv.className = 'status';
+                statusDiv.style.display = 'none';
+
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include', // Important for cookies
+                    body: JSON.stringify({ email, password })
+                });
+
+                // Check if response is actually JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Received non-JSON response:', text.substring(0, 200));
+                    throw new Error('Server returned non-JSON response. Status: ' + response.status);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    statusDiv.textContent = 'Login successful! Redirecting to dashboard...';
+                    statusDiv.className = 'status success';
+                    statusDiv.style.display = 'block';
+                    
+                    // Redirect to main dashboard page (frontend)
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else if (data.needsVerification) {
+                    // User needs to verify email - redirect to verification page
+                    statusDiv.textContent = data.message || 'Please verify your email. Redirecting to verification page...';
+                    statusDiv.className = 'status error';
+                    statusDiv.style.display = 'block';
+                    
+                    // Build verification page URL with email and code (if available)
+                    let redirectUrl = `/verify-email.html?email=${encodeURIComponent(data.email)}&from=login`;
+                    if (data.verificationCode) {
+                        redirectUrl += `&code=${data.verificationCode}`;
+                    }
+                    
+                    // Redirect to verification page
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 2000);
+                } else {
+                    statusDiv.textContent = data.error || 'Login failed';
+                    statusDiv.className = 'status error';
+                    statusDiv.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Login';
+                }
+            } catch (error) {
+                console.error('Error logging in:', error);
+                let errorMsg = 'Error: Failed to connect to server';
+                if (error.message) {
+                    errorMsg += ' - ' + error.message;
+                }
+                statusDiv.textContent = errorMsg;
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+    </script>
+</body>
+</html>
+

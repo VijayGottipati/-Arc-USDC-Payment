@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .header-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header-left p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-danger:hover {
+            background: white;
+            color: #dc3545;
+        }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .wallet-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .wallet-balance {
+            font-size: 42px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .wallet-address {
+            font-size: 12px;
+            opacity: 0.9;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 20px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            background: #f8f9fa;
+        }
+
+        .action-btn.send {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .action-btn.send:hover {
+            background: linear-gradient(135deg, #0d7a6f 0%, #2dd169 100%);
+        }
+
+        .action-btn.history {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .action-btn.history:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a91 100%);
+        }
+
+        .three-cards-row {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .dashboard-card {
+            min-height: 300px;
+        }
+
+        .dashboard-card .section-title {
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 1200px) {
+            .three-cards-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analysis-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .analysis-card .section-title {
+            color: white;
+        }
+
+        .analysis-card .view-all-link {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .contact-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .contact-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .contact-address {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        .ai-query-container {
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+
+        .ai-query-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            max-height: 200px;
+        }
+
+        .ai-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .ai-message.user {
+            background: #667eea;
+            color: white;
+            text-align: right;
+        }
+
+        .ai-message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .ai-query-input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        .ai-query-input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .ai-query-input-area input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .ai-query-input-area button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .ai-query-input-area button:hover {
+            background: #5568d3;
+        }
+
+        .payment-history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-history-item .amount {
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .analysis-summary-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .analysis-summary-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .btn-notification {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notification:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .btn-mark-all-read {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mark-all-read:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-item.unread {
+            background: #e7f3ff;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .notification-item .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .notification-item .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .notification-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .notification-item .notification-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-item .notification-delete:hover {
+            color: #dc3545;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-all-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: normal;
+            transition: color 0.3s ease;
+        }
+
+        .view-all-link:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .payments-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payments-table thead {
+            background: #f8f9fa;
+        }
+
+        .payments-table th {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .payments-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .payments-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .payments-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .wallet-address-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .amount-cell {
+            font-weight: bold;
+            color: #28a745;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        .tx-link {
+            color: #667eea;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+
+        .tx-link:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+            border: 2px solid #28a745;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+            border: 2px solid #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 1fr;
+        }
+
+            .header-card {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Card -->
+        <div class="card header-card">
+            <div class="header-left">
+                <h1>💰 Dashboard</h1>
+                <p id="usernameDisplay">Welcome back!</p>
+            </div>
+            <div class="header-right">
+                <div class="nav-menu">
+                    <a href="/" class="active">Dashboard</a>
+                    <a href="/transfer.html">Send Payment</a>
+                    <a href="/payment-history.html">Payment History</a>
+                    <a href="/contacts.html">Contacts</a>
+                    <a href="/profile.html">Profile</a>
+                    <a href="/ai-chat.html">AI Assistant</a>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+
+        <!-- Wallet Card -->
+        <div class="card wallet-card">
+            <div class="wallet-label">Your Wallet Balance</div>
+            <div class="wallet-balance" id="walletBalance">Loading...</div>
+            <div class="wallet-address" id="walletAddress">Loading wallet address...</div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="card stats-card">
+            <h2 style="color: #333; margin-bottom: 20px; font-size: 24px;">📊 Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Transactions</div>
+                    <div class="stat-value" id="totalTransactions">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Transferred</div>
+                    <div class="stat-value" id="totalTransferred">0 USDC</div>
+                </div>
+            </div>
+            </div>
+
+        <!-- Three Cards in Single Row -->
+        <div class="three-cards-row">
+            <!-- Payment History Card -->
+            <div class="card dashboard-card">
+                <div class="section-title">
+                    <span>📋 Payment History</span>
+                    <a href="/payment-history.html" class="view-all-link">View All →</a>
+                </div>
+                <div id="paymentHistoryCard">
+                    <p class="empty-state">Loading payment history...</p>
+                </div>
+            </div>
+
+            <!-- Frequently Used Contacts Card -->
+            <div class="card dashboard-card">
+                <div class="section-title">
+                    <span>👥 Frequently Used Contacts</span>
+                    <a href="/contacts.html" class="view-all-link">View All →</a>
+                </div>
+                <div id="frequentContactsCard">
+                    <p class="empty-state">Loading contacts...</p>
+                </div>
+            </div>
+
+            <!-- AI Query Agent Card -->
+            <div class="card dashboard-card">
+                <div class="section-title">
+                    <span>🤖 AI Query Agent</span>
+                </div>
+                <div id="aiQueryCard">
+                    <div class="ai-query-container">
+                        <div id="aiQueryMessages" class="ai-query-messages"></div>
+                        <div class="ai-query-input-area">
+                            <input type="text" id="aiQueryInput" placeholder="Ask a question..." />
+                            <button id="aiQuerySendBtn" onclick="sendAIQuery()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Card -->
+        <div class="card analysis-card">
+            <div class="section-title">
+                <span>📈 Payment Analysis</span>
+            </div>
+            <div id="analysisSummary">
+                <p class="empty-state">Loading analysis...</p>
+            </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="/analysis.html" class="btn btn-primary">View Detailed Analysis →</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status" style="max-width: 1400px; margin: 20px auto 0;"></div>
+
+    <script src="frontend.js"></script>
+</body>
+</html>

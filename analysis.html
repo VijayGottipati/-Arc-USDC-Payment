@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Analysis - USDC Transfer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-menu a.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-danger:hover {
+            background: white;
+            color: #dc3545;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .analysis-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .analysis-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .insight-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+        }
+
+        .recommendation-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #e7f3ff;
+            border-left: 4px solid #4facfe;
+            border-radius: 8px;
+        }
+
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-box .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-box .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .btn-notification {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notification:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .btn-mark-all-read {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mark-all-read:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-item.unread {
+            background: #e7f3ff;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .notification-item .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .notification-item .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .notification-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .notification-item .notification-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-item .notification-delete:hover {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header-card">
+            <div class="header-left">
+                <h1>📈 Payment Analysis</h1>
+            </div>
+            <div class="header-right">
+                <div class="nav-menu">
+                    <a href="/">Dashboard</a>
+                    <a href="/transfer.html">Send Payment</a>
+                    <a href="/payment-history.html">Payment History</a>
+                    <a href="/contacts.html">Contacts</a>
+                    <a href="/profile.html">Profile</a>
+                    <a href="/ai-chat.html">AI Assistant</a>
+                </div>
+                <div class="notification-wrapper">
+                    <button id="notificationBtn" class="btn-notification" onclick="toggleNotifications()">
+                        🔔
+                        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div id="notificationPanel" class="notification-panel" style="display: none;">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button onclick="markAllNotificationsAsRead()" class="btn-mark-all-read">Mark all as read</button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <p class="empty-state">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📊 Statistics Overview</div>
+            <div class="statistics-grid" id="statisticsGrid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Transactions</div>
+                    <div class="stat-value" id="totalTransactions">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Inbound</div>
+                    <div class="stat-value" id="totalInbound">0 USDC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Outbound</div>
+                    <div class="stat-value" id="totalOutbound">0 USDC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Average Amount</div>
+                    <div class="stat-value" id="averageAmount">0 USDC</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Largest Transaction</div>
+                    <div class="stat-value" id="largestTransaction">0 USDC</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📈 Daily Spending Trend</div>
+            <div class="chart-container">
+                <canvas id="dailySpendingChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📊 Monthly Payment Trend</div>
+            <div class="chart-container">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">🏆 Top Recipients</div>
+            <div class="chart-container">
+                <canvas id="topRecipientsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">💡 Insights & Analysis</div>
+            <div id="insightsSection" class="analysis-section">
+                <p>Loading insights...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">💼 Recommendations</div>
+            <div id="recommendationsSection" class="analysis-section">
+                <p>Loading recommendations...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="frontend.js"></script>
+    <script>
+        let dailySpendingChart = null;
+        let monthlyTrendChart = null;
+        let topRecipientsChart = null;
+
+        async function loadAnalysis() {
+            try {
+                const response = await fetch('/api/ai/report', {
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.report) {
+                    const report = data.report;
+                    
+                    // Update statistics
+                    if (report.statistics) {
+                        document.getElementById('totalTransactions').textContent = report.statistics.totalTransactions || 0;
+                        document.getElementById('totalInbound').textContent = formatAmount(report.statistics.totalInbound || 0) + ' USDC';
+                        document.getElementById('totalOutbound').textContent = formatAmount(report.statistics.totalOutbound || 0) + ' USDC';
+                        document.getElementById('averageAmount').textContent = formatAmount(report.statistics.averageAmount || 0) + ' USDC';
+                        document.getElementById('largestTransaction').textContent = formatAmount(report.statistics.largestTransaction || 0) + ' USDC';
+                    }
+
+                    // Update charts
+                    if (report.chartData) {
+                        updateCharts(report.chartData);
+                    }
+
+                    // Update insights
+                    if (report.insights && report.insights.length > 0) {
+                        const insightsDiv = document.getElementById('insightsSection');
+                        insightsDiv.innerHTML = '';
+                        report.insights.forEach(insight => {
+                            const insightDiv = document.createElement('div');
+                            insightDiv.className = 'insight-item';
+                            insightDiv.textContent = insight;
+                            insightsDiv.appendChild(insightDiv);
+                        });
+                    }
+
+                    // Update recommendations
+                    if (report.recommendations && report.recommendations.length > 0) {
+                        const recommendationsDiv = document.getElementById('recommendationsSection');
+                        recommendationsDiv.innerHTML = '';
+                        report.recommendations.forEach(rec => {
+                            const recDiv = document.createElement('div');
+                            recDiv.className = 'recommendation-item';
+                            recDiv.textContent = rec;
+                            recommendationsDiv.appendChild(recDiv);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading analysis:', error);
+            }
+        }
+
+        function updateCharts(chartData) {
+            // Daily Spending Chart
+            if (chartData.dailySpending && chartData.dailySpending.length > 0) {
+                const ctx1 = document.getElementById('dailySpendingChart');
+                if (dailySpendingChart) {
+                    dailySpendingChart.destroy();
+                }
+                dailySpendingChart = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.dailySpending.map(d => new Date(d.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Daily Spending (USDC)',
+                            data: chartData.dailySpending.map(d => d.amount),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Amount: ' + formatAmount(context.parsed.y) + ' USDC';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatAmount(value) + ' USDC';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Monthly Trend Chart
+            if (chartData.monthlyTrend && chartData.monthlyTrend.length > 0) {
+                const ctx2 = document.getElementById('monthlyTrendChart');
+                if (monthlyTrendChart) {
+                    monthlyTrendChart.destroy();
+                }
+                monthlyTrendChart = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.monthlyTrend.map(d => d.month),
+                        datasets: [
+                            {
+                                label: 'Inbound (USDC)',
+                                data: chartData.monthlyTrend.map(d => d.inbound),
+                                backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                                borderColor: '#28a745',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Outbound (USDC)',
+                                data: chartData.monthlyTrend.map(d => d.outbound),
+                                backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                                borderColor: '#667eea',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + formatAmount(context.parsed.y) + ' USDC';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatAmount(value) + ' USDC';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Top Recipients Chart
+            if (chartData.topRecipients && chartData.topRecipients.length > 0) {
+                const ctx3 = document.getElementById('topRecipientsChart');
+                if (topRecipientsChart) {
+                    topRecipientsChart.destroy();
+                }
+                topRecipientsChart = new Chart(ctx3, {
+                    type: 'doughnut',
+                    data: {
+                        labels: chartData.topRecipients.map(r => r.recipient),
+                        datasets: [{
+                            label: 'Amount (USDC)',
+                            data: chartData.topRecipients.map(r => r.amount),
+                            backgroundColor: [
+                                '#667eea',
+                                '#764ba2',
+                                '#f093fb',
+                                '#f5576c',
+                                '#4facfe',
+                                '#00f2fe',
+                                '#43e97b',
+                                '#38f9d7'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: true, position: 'right' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + formatAmount(context.parsed) + ' USDC';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('load', async function() {
+            await loadAnalysis();
+        });
+    </script>
+    <script src="notifications.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            startNotificationPolling();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .header-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .btn-notification {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notification:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .btn-mark-all-read {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mark-all-read:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-item.unread {
+            background: #e7f3ff;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .notification-item .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .notification-item .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .notification-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .notification-item .notification-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-item .notification-delete:hover {
+            color: #dc3545;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-danger:hover {
+            background: white;
+            color: #dc3545;
+        }
+
+        .wallet-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .wallet-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .wallet-address {
+            font-size: 12px;
+            opacity: 0.9;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .profile-form-card {
+            grid-column: 1 / -1;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input:disabled {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .btn-save:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-save:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .danger-zone {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 3px solid #e0e0e0;
+        }
+
+        .danger-zone .section-title {
+            color: #dc3545;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box p {
+            color: #856404;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .warning-box ul {
+            color: #856404;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .btn-delete {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+            border: 2px solid #28a745;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+            border: 2px solid #dc3545;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #38ef7d;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .header-card {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header-card">
+            <div class="header-left">
+                <h1>👤 User Profile</h1>
+            </div>
+            <div class="header-right">
+                <div class="nav-menu">
+                    <a href="/">Dashboard</a>
+                    <a href="/transfer.html">Send Payment</a>
+                    <a href="/payment-history.html">Payment History</a>
+                    <a href="/contacts.html">Contacts</a>
+                    <a href="/profile.html" class="active">Profile</a>
+                    <a href="/ai-chat.html">AI Assistant</a>
+                </div>
+                <div class="notification-wrapper">
+                    <button id="notificationBtn" class="btn-notification" onclick="toggleNotifications()">
+                        🔔
+                        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div id="notificationPanel" class="notification-panel" style="display: none;">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button onclick="markAllNotificationsAsRead()" class="btn-mark-all-read">Mark all as read</button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <p class="empty-state">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+
+        <div class="card wallet-card">
+            <div class="wallet-label">Wallet Address</div>
+            <div class="wallet-address" id="walletAddress">Loading...</div>
+            <p style="margin-top: 15px; font-size: 12px; opacity: 0.9;">⚠️ This address cannot be changed. It is permanently linked to your account.</p>
+        </div>
+
+        <div class="card profile-form-card">
+            <div id="status" class="status"></div>
+
+            <form id="profileForm" onsubmit="handleUpdateProfile(event)">
+                <div class="section-title">📝 Personal Information</div>
+                
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" disabled />
+                        <p class="info-text">Email cannot be changed</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username *</label>
+                        <input type="text" id="username" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender">
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nationality">Nationality</label>
+                        <input type="text" id="nationality" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dateOfBirth">Date of Birth</label>
+                        <input type="date" id="dateOfBirth" />
+                    </div>
+                </div>
+
+                <button type="submit" id="saveBtn" class="btn-save">💾 Save Changes</button>
+            </form>
+
+            <div class="danger-zone">
+                <div class="section-title">⚠️ Danger Zone</div>
+                <div class="warning-box">
+                    <p><strong>WARNING:</strong> Deleting your account will permanently remove:</p>
+                    <ul>
+                        <li>Your wallet and all associated data</li>
+                        <li>Your profile information</li>
+                        <li>Your payment history</li>
+                        <li>Your contacts</li>
+                    </ul>
+                    <p style="font-size: 13px; margin: 0;">This action cannot be undone. Make sure you have saved your private key if you want to access your wallet in the future.</p>
+                </div>
+                <button onclick="handleDeleteAccount()" class="btn-delete">🗑️ Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '';
+
+        window.addEventListener('load', async function() {
+            await loadProfile();
+        });
+
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Error checking authentication:', error);
+                window.location.href = '/login.html';
+                return false;
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const authCheck = await checkAuthentication();
+                if (!authCheck) return;
+
+                const response = await fetch(`${API_BASE_URL}/api/profile`, {
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.profile) {
+                    const profile = data.profile;
+                    
+                    document.getElementById('email').value = profile.email || '';
+                    document.getElementById('username').value = profile.username || '';
+                    document.getElementById('firstName').value = profile.firstName || '';
+                    document.getElementById('lastName').value = profile.lastName || '';
+                    document.getElementById('gender').value = profile.gender || '';
+                    document.getElementById('nationality').value = profile.nationality || '';
+                    document.getElementById('phone').value = profile.phone || '';
+                    document.getElementById('dateOfBirth').value = profile.dateOfBirth || '';
+                    
+                    const walletAddressEl = document.getElementById('walletAddress');
+                    if (profile.walletAddress) {
+                        walletAddressEl.textContent = profile.walletAddress;
+                    } else {
+                        walletAddressEl.textContent = 'No wallet address found';
+                        walletAddressEl.style.color = '#fff';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showStatus('Error loading profile: ' + error.message, 'error');
+            }
+        }
+
+        async function handleUpdateProfile(event) {
+            event.preventDefault();
+
+            const saveBtn = document.getElementById('saveBtn');
+            
+            try {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="loading"></span> Saving...';
+
+                const profileData = {
+                    username: document.getElementById('username').value.trim(),
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    gender: document.getElementById('gender').value || null,
+                    nationality: document.getElementById('nationality').value.trim() || null,
+                    phone: document.getElementById('phone').value.trim() || null,
+                    dateOfBirth: document.getElementById('dateOfBirth').value || null
+                };
+
+                const response = await fetch(`${API_BASE_URL}/api/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(profileData)
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('✅ Profile updated successfully!', 'success');
+                    setTimeout(() => {
+                        loadProfile();
+                    }, 1000);
+                } else {
+                    showStatus('Failed to update profile: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showStatus('Error updating profile: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Save Changes';
+            }
+        }
+
+        window.handleLogout = async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+                window.location.href = '/login.html';
+            }
+        };
+
+        async function handleDeleteAccount() {
+            if (!confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.')) {
+                return;
+            }
+
+            if (!confirm('This is your last chance. Are you absolutely sure you want to delete your account?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/profile`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Account deleted successfully. You will be redirected to the login page.');
+                    window.location.href = '/login.html';
+                } else {
+                    showStatus('Failed to delete account: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showStatus('Error deleting account: ' + error.message, 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status ' + type;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.className = 'status';
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+    <script src="notifications.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            startNotificationPolling();
+        });
+    </script>
+</body>
+</html>

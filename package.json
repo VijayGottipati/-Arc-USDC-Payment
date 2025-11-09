@@ -1,0 +1,45 @@
+{
+  "name": "arcpay",
+  "version": "1.0.0",
+  "description": "AI-powered USDC payment system for Arc Testnet with automatic scheduling, risk assessment, and intelligent transaction processing",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.10.0",
+    "chart.js": "^4.5.1",
+    "dotenv": "^16.6.1",
+    "ethers": "^5.7.2",
+    "express": "^4.21.2",
+    "express-session": "^1.18.2",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^6.10.1",
+    "openai": "^6.8.1"
+  },
+  "keywords": [
+    "arc",
+    "usdc",
+    "transfer",
+    "blockchain",
+    "ai",
+    "payment",
+    "crypto",
+    "web3",
+    "ethereum",
+    "automated-payments"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

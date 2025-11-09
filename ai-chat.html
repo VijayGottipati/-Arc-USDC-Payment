@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .btn-notification {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notification:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .btn-mark-all-read {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mark-all-read:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-item.unread {
+            background: #e7f3ff;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .notification-item .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .notification-item .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .notification-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .notification-item .notification-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-item .notification-delete:hover {
+            color: #dc3545;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-danger:hover {
+            background: white;
+            color: #dc3545;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-bubble {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            margin-left: 10px;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-indicator.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-indicator.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header-card">
+            <div class="header-left">
+                <h1>🤖 AI Assistant</h1>
+            </div>
+            <div class="header-right">
+                <div class="nav-menu">
+                    <a href="/">Dashboard</a>
+                    <a href="/transfer.html">Send Payment</a>
+                    <a href="/payment-history.html">Payment History</a>
+                    <a href="/contacts.html">Contacts</a>
+                    <a href="/profile.html">Profile</a>
+                    <a href="/ai-chat.html" class="active">AI Assistant</a>
+                </div>
+                <div class="notification-wrapper">
+                    <button id="notificationBtn" class="btn-notification" onclick="toggleNotifications()">
+                        🔔
+                        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div id="notificationPanel" class="notification-panel" style="display: none;">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button onclick="markAllNotificationsAsRead()" class="btn-mark-all-read">Mark all as read</button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <p class="empty-state">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="statusIndicator" class="status-indicator success" style="display: none;"></div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant">
+                        <div class="message-bubble">
+                            👋 Hello! I'm your AI assistant. I can help you with:
+                            <ul style="margin-top: 10px; margin-left: 20px;">
+                                <li>Check your wallet balance</li>
+                                <li>View payment history</li>
+                                <li>Send payments</li>
+                                <li>Schedule recurring payments</li>
+                                <li>Analyze your spending patterns</li>
+                                <li>Answer questions about your transactions</li>
+                            </ul>
+                            <p style="margin-top: 10px;">How can I help you today?</p>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type your message here..." onkeypress="handleKeyPress(event)" />
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        const API_BASE_URL = '';
+
+        // Handle logout
+        window.handleLogout = async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+                window.location.href = '/login.html';
+            }
+        };
+
+        // Handle key press
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Send message to AI
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage('user', message);
+            input.value = '';
+
+            // Disable send button
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Handle different response types
+                    if (data.type === 'report' && data.report) {
+                        displayReport(data.report);
+                    } else if (data.type === 'payment_history' && data.history) {
+                        displayPaymentHistory(data.history, data.filter);
+                    } else if (data.type === 'balance') {
+                        addMessage('assistant', data.message);
+                    } else if (data.type === 'payment_ready') {
+                        // Payment is ready - ask for private key
+                        displayPaymentReady(data);
+                    } else if (data.type === 'payment_confirmation_required') {
+                        displayPaymentConfirmation(data);
+                    } else if (data.type === 'payment_scheduled') {
+                        addMessage('assistant', data.message);
+                    } else if (data.type === 'cancel_payment' && data.scheduledPayments) {
+                        displayCancelPaymentOptions(data);
+                    } else if (data.type === 'cancel_success') {
+                        addMessage('assistant', `✅ ${data.message}`);
+                    } else if (data.type === 'cancel_error') {
+                        addMessage('assistant', `❌ ${data.message}`);
+                    } else if (data.type === 'payment_error') {
+                        addMessage('assistant', `❌ ${data.message}`);
+                    } else if (data.type === 'payment_rejected') {
+                        addMessage('assistant', `❌ ${data.message}`);
+                    } else {
+                        addMessage('assistant', data.message);
+                    }
+                } else {
+                    // Handle different error types
+                    if (data.type === 'error') {
+                        addMessage('assistant', `❌ ${data.message || data.error || 'Error processing request'}`);
+                    } else if (data.type === 'payment_error') {
+                        addMessage('assistant', `❌ Payment Error: ${data.message || data.error}`);
+                    } else if (data.type === 'payment_rejected') {
+                        addMessage('assistant', `❌ Payment Rejected: ${data.message || data.error}`);
+                    } else {
+                        addMessage('assistant', `❌ ${data.error || data.message || 'Error processing request'}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                let errorMsg = 'Error: Failed to connect to server';
+                if (error.message) {
+                    errorMsg += ` - ${error.message}`;
+                }
+                addMessage('assistant', `❌ ${errorMsg}`);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = 'Send';
+            }
+        }
+
+        // Add message to chat
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = content.replace(/\n/g, '<br>');
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = new Date().toLocaleTimeString();
+            
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(time);
+            messagesDiv.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Display payment history
+        function displayPaymentHistory(history, filter) {
+            if (history.length === 0) {
+                addMessage('assistant', '📭 No payment history found.');
+                return;
+            }
+
+            let html = `📊 Payment History (${filter || 'all'}):<br><br>`;
+            html += '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+            html += '<tr style="background: #f0f0f0;"><th style="padding: 8px; text-align: left;">Date</th><th style="padding: 8px; text-align: left;">Type</th><th style="padding: 8px; text-align: right;">Amount</th></tr>';
+            
+            history.slice(0, 10).forEach(payment => {
+                const date = new Date(payment.created_at).toLocaleDateString();
+                const type = payment.transaction_type === 'inbound' ? '📥 Inbound' : '📤 Outbound';
+                const amount = parseFloat(payment.amount).toFixed(6);
+                html += `<tr><td style="padding: 8px;">${date}</td><td style="padding: 8px;">${type}</td><td style="padding: 8px; text-align: right;">${amount} USDC</td></tr>`;
+            });
+            
+            html += '</table>';
+            if (history.length > 10) {
+                html += `<br><small>Showing first 10 of ${history.length} transactions</small>`;
+            }
+            
+            addMessage('assistant', html);
+        }
+
+        // Display report with charts
+        function displayReport(report) {
+            let html = `📈 Payment Analysis Report:<br><br>`;
+            html += `<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+            html += `<strong>Summary:</strong><br>${report.summary || 'No summary available'}<br>`;
+            html += `</div>`;
+            
+            if (report.statistics) {
+                html += `<div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+                html += `<strong>📊 Statistics:</strong><br>`;
+                html += `• Total Transactions: ${report.statistics.totalTransactions || 0}<br>`;
+                html += `• Total Inbound: ${(report.statistics.totalInbound || 0).toFixed(6)} USDC<br>`;
+                html += `• Total Outbound: ${(report.statistics.totalOutbound || 0).toFixed(6)} USDC<br>`;
+                html += `• Average Amount: ${(report.statistics.averageAmount || 0).toFixed(6)} USDC<br>`;
+                if (report.statistics.largestTransaction) {
+                    html += `• Largest Transaction: ${report.statistics.largestTransaction.toFixed(6)} USDC<br>`;
+                }
+                html += `</div>`;
+            }
+            
+            if (report.insights && report.insights.length > 0) {
+                html += `<div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+                html += `<strong>💡 Insights:</strong><br>`;
+                report.insights.forEach(insight => {
+                    html += `• ${insight}<br>`;
+                });
+                html += `</div>`;
+            }
+            
+            if (report.recommendations && report.recommendations.length > 0) {
+                html += `<div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin-bottom: 15px;">`;
+                html += `<strong>💼 Recommendations:</strong><br>`;
+                report.recommendations.forEach(rec => {
+                    html += `• ${rec}<br>`;
+                });
+                html += `</div>`;
+            }
+            
+            addMessage('assistant', html);
+            
+            // Display charts if chart data is available
+            if (report.chartData && (report.chartData.dailySpending?.length > 0 || report.chartData.monthlyTrend?.length > 0)) {
+                setTimeout(() => displayCharts(report.chartData), 100);
+            }
+        }
+
+        // Display charts
+        function displayCharts(chartData) {
+            const messagesDiv = document.getElementById('chatMessages');
+            
+            // Remove existing chart container if any
+            const existingContainer = document.getElementById('chartContainer');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+            
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'chart-container';
+            chartContainer.id = 'chartContainer';
+            chartContainer.style.marginTop = '20px';
+            messagesDiv.appendChild(chartContainer);
+            
+            // Daily spending chart
+            if (chartData.dailySpending && chartData.dailySpending.length > 0) {
+                const chartTitle = document.createElement('h3');
+                chartTitle.textContent = '📊 Daily Spending Trend';
+                chartTitle.style.marginBottom = '15px';
+                chartContainer.appendChild(chartTitle);
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = 'dailySpendingChart';
+                canvas.style.maxHeight = '300px';
+                chartContainer.appendChild(canvas);
+                
+                new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.dailySpending.map(d => new Date(d.date).toLocaleDateString()),
+                        datasets: [{
+                            label: 'Daily Spending (USDC)',
+                            data: chartData.dailySpending.map(d => d.amount),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Amount: ' + parseFloat(context.parsed.y).toFixed(6) + ' USDC';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return parseFloat(value).toFixed(4) + ' USDC';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Monthly trend chart
+            if (chartData.monthlyTrend && chartData.monthlyTrend.length > 0) {
+                const chartTitle2 = document.createElement('h3');
+                chartTitle2.textContent = '📈 Monthly Payment Trend';
+                chartTitle2.style.marginTop = '30px';
+                chartTitle2.style.marginBottom = '15px';
+                chartContainer.appendChild(chartTitle2);
+                
+                const canvas2 = document.createElement('canvas');
+                canvas2.id = 'monthlyTrendChart';
+                canvas2.style.maxHeight = '300px';
+                chartContainer.appendChild(canvas2);
+                
+                new Chart(canvas2, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.monthlyTrend.map(d => d.month),
+                        datasets: [
+                            {
+                                label: 'Inbound (USDC)',
+                                data: chartData.monthlyTrend.map(d => d.inbound),
+                                backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                                borderColor: '#28a745',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Outbound (USDC)',
+                                data: chartData.monthlyTrend.map(d => d.outbound),
+                                backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                                borderColor: '#667eea',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: true },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + parseFloat(context.parsed.y).toFixed(6) + ' USDC';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return parseFloat(value).toFixed(4) + ' USDC';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Scroll to charts
+            chartContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Display payment ready - ask for private key
+        function displayPaymentReady(data) {
+            if (!data.paymentData) {
+                addMessage('assistant', '❌ Payment data is missing.');
+                return;
+            }
+
+            const paymentId = 'payment_' + Date.now();
+            const paymentData = data.paymentData;
+            
+            let html = `✅ Payment Approved and Ready to Execute:<br><br>`;
+            html += `<div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #28a745;">`;
+            html += `<strong>Payment Details:</strong><br>`;
+            html += `• Amount: <strong>${paymentData.amount} USDC</strong><br>`;
+            html += `• Recipient: <strong>${paymentData.recipientName || paymentData.toAddress}</strong><br>`;
+            html += `• To Address: <code style="background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${paymentData.toAddress}</code><br>`;
+            html += `</div>`;
+            
+            if (data.risk && data.risk.warnings && data.risk.warnings.length > 0) {
+                html += `<div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin: 10px 0; border-left: 4px solid #ffc107;">`;
+                html += `<strong>⚠️ Warnings:</strong><br>`;
+                data.risk.warnings.forEach(warning => {
+                    html += `• ${warning}<br>`;
+                });
+                html += `</div>`;
+            }
+            
+            html += `<div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">`;
+            html += `<strong>🔐 Security Required:</strong><br>`;
+            html += `To execute this payment, please enter your private key. Your private key is required to authorize this transaction.<br><br>`;
+            html += `⚠️ <strong>Warning:</strong> Your private key is never stored. It is only used to sign this transaction and is immediately discarded.`;
+            html += `</div>`;
+            
+            html += `<div style="margin-top: 15px;">`;
+            html += `<input type="password" id="${paymentId}_privateKey" placeholder="Enter your private key (0x...)" style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 14px; font-family: monospace; margin-bottom: 10px;" />`;
+            html += `<div style="display: flex; gap: 10px;">`;
+            html += `<button id="${paymentId}_executeBtn" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.3s;">✅ Execute Payment</button>`;
+            html += `<button id="${paymentId}_cancelBtn" style="padding: 12px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.3s;">❌ Cancel</button>`;
+            html += `</div>`;
+            html += `</div>`;
+            
+            addMessage('assistant', html);
+            
+            // Store payment data and attach event listeners
+            setTimeout(() => {
+                // Store payment data in a data attribute
+                const executeBtn = document.getElementById(paymentId + '_executeBtn');
+                const cancelBtn = document.getElementById(paymentId + '_cancelBtn');
+                const privateKeyInput = document.getElementById(paymentId + '_privateKey');
+                
+                if (executeBtn) {
+                    executeBtn.dataset.paymentData = JSON.stringify(paymentData);
+                    executeBtn.onclick = function() {
+                        const storedData = JSON.parse(this.dataset.paymentData);
+                        window.executePayment(paymentId, storedData);
+                    };
+                }
+                
+                if (cancelBtn) {
+                    cancelBtn.onclick = function() {
+                        window.cancelPayment(paymentId);
+                    };
+                }
+                
+                // Allow Enter key to submit
+                if (privateKeyInput) {
+                    privateKeyInput.onkeypress = function(e) {
+                        if (e.key === 'Enter' && executeBtn) {
+                            executeBtn.click();
+                        }
+                    };
+                }
+            }, 100);
+        }
+
+        // Execute payment (make it globally accessible)
+        window.executePayment = async function(paymentId, paymentData) {
+            // paymentData should already be an object
+            if (!paymentData || typeof paymentData !== 'object') {
+                console.error('Invalid payment data:', paymentData);
+                addMessage('assistant', '❌ Error: Invalid payment data');
+                return;
+            }
+            
+            const privateKeyInput = document.getElementById(paymentId + '_privateKey');
+            if (!privateKeyInput) {
+                addMessage('assistant', '❌ Error: Payment form not found');
+                return;
+            }
+            
+            const privateKey = privateKeyInput.value.trim();
+            
+            if (!privateKey) {
+                alert('Please enter your private key');
+                return;
+            }
+            
+            if (!privateKey.startsWith('0x') || privateKey.length !== 66) {
+                alert('Invalid private key format. Private key should start with 0x and be 66 characters long.');
+                return;
+            }
+            
+            // Disable the input and buttons
+            privateKeyInput.disabled = true;
+            const buttonContainer = privateKeyInput.parentElement;
+            const buttons = buttonContainer?.querySelectorAll('button');
+            if (buttons) {
+                buttons.forEach(btn => {
+                    btn.disabled = true;
+                    if (btn.textContent.includes('Execute')) {
+                        btn.innerHTML = '<span class="loading"></span> Executing...';
+                    }
+                });
+            }
+            
+            // Add processing message
+            addMessage('user', 'Executing payment...');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/transfer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        toAddress: paymentData.toAddress,
+                        amount: paymentData.amount.toString(),
+                        privateKey: privateKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage('assistant', `✅ Payment executed successfully!<br><br>Transaction Hash: <code style="background: #f8f9fa; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 12px;">${data.transactionHash}</code><br><br>Amount: ${paymentData.amount} USDC sent to ${paymentData.recipientName || paymentData.toAddress}`);
+                    
+                    // Clear and hide the private key input
+                    privateKeyInput.value = '';
+                    privateKeyInput.style.display = 'none';
+                    
+                    // Hide the buttons
+                    if (buttonContainer) {
+                        buttonContainer.style.display = 'none';
+                    }
+                } else {
+                    addMessage('assistant', `❌ Payment failed: ${data.error || 'Unknown error'}`);
+                    
+                    // Re-enable inputs
+                    privateKeyInput.disabled = false;
+                    if (buttons) {
+                        buttons.forEach(btn => {
+                            btn.disabled = false;
+                            if (btn.textContent.includes('Executing')) {
+                                btn.innerHTML = '✅ Execute Payment';
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error executing payment:', error);
+                addMessage('assistant', `❌ Error executing payment: ${error.message}`);
+                
+                // Re-enable inputs
+                privateKeyInput.disabled = false;
+                if (buttons) {
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                        if (btn.textContent.includes('Executing')) {
+                            btn.innerHTML = '✅ Execute Payment';
+                        }
+                    });
+                }
+            }
+        };
+
+        // Cancel payment (make it globally accessible)
+        window.cancelPayment = function(paymentId) {
+            const privateKeyInput = document.getElementById(paymentId + '_privateKey');
+            if (!privateKeyInput) {
+                return;
+            }
+            
+            const buttonContainer = privateKeyInput.parentElement;
+            
+            // Clear and hide the private key input
+            privateKeyInput.value = '';
+            privateKeyInput.style.display = 'none';
+            
+            // Hide the buttons
+            if (buttonContainer) {
+                buttonContainer.style.display = 'none';
+            }
+            
+            addMessage('assistant', '❌ Payment cancelled by user.');
+        };
+
+        // Display payment confirmation
+        function displayPaymentConfirmation(data) {
+            let html = `⚠️ Payment Confirmation Required:<br><br>`;
+            html += `Amount: ${data.paymentData.amount} USDC<br>`;
+            html += `To: ${data.paymentData.recipientName || data.paymentData.toAddress}<br>`;
+            if (data.warnings && data.warnings.length > 0) {
+                html += `<br><strong>Warnings:</strong><br>`;
+                data.warnings.forEach(warning => {
+                    html += `• ${warning}<br>`;
+                });
+            }
+            html += `<br>Please confirm this payment on the Send Payment page.`;
+            addMessage('assistant', html);
+        }
+
+        // Display cancel payment options
+        function displayCancelPaymentOptions(data) {
+            let html = `📋 Scheduled Payments:<br><br>`;
+            data.scheduledPayments.forEach(payment => {
+                html += `<div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 5px;">`;
+                html += `<strong>Payment ID: ${payment.id}</strong><br>`;
+                html += `Amount: ${payment.amount} USDC<br>`;
+                html += `Type: ${payment.payment_type}<br>`;
+                if (payment.frequency) {
+                    html += `Frequency: ${payment.frequency}<br>`;
+                }
+                if (payment.condition) {
+                    html += `Condition: ${payment.condition}<br>`;
+                }
+                html += `Status: ${payment.status}<br>`;
+                html += `</div>`;
+            });
+            html += `<br>${data.message}`;
+            addMessage('assistant', html);
+        }
+
+        // Check authentication on load
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                console.error('Error checking authentication:', error);
+                window.location.href = '/login.html';
+            }
+        });
+    </script>
+    <script src="notifications.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            startNotificationPolling();
+        });
+    </script>
+</body>
+</html>
+

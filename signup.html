@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        label.required::after {
+            content: ' *';
+            color: #dc3545;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 15px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .switch-mode {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .switch-mode a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .switch-mode a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1>USDC Transfer</h1>
+        <p class="subtitle">Create a new account</p>
+
+        <form id="signupForm" onsubmit="handleSignup(event)">
+            <div class="form-group">
+                <label for="email" class="required">Email</label>
+                <input type="email" id="email" name="email" required autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label for="username" class="required">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username" minlength="3" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName" class="required">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required autocomplete="given-name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName" class="required">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required autocomplete="family-name" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="required">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="new-password" minlength="6" />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword" class="required">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required autocomplete="new-password" minlength="6" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nationality">Nationality</label>
+                    <input type="text" id="nationality" name="nationality" autocomplete="country" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" autocomplete="tel" />
+            </div>
+
+            <div class="form-group">
+                <label for="dateOfBirth">Date of Birth</label>
+                <input type="date" id="dateOfBirth" name="dateOfBirth" />
+            </div>
+
+            <button type="submit" id="signupBtn">Sign Up</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <div class="switch-mode">
+            Already have an account? <a href="/login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        let signupEmail = null;
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const gender = document.getElementById('gender').value;
+            const nationality = document.getElementById('nationality').value;
+            const phone = document.getElementById('phone').value;
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const signupBtn = document.getElementById('signupBtn');
+            const statusDiv = document.getElementById('status');
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                statusDiv.textContent = 'Passwords do not match';
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                signupBtn.disabled = true;
+                signupBtn.innerHTML = '<span class="loading"></span> Creating account...';
+                statusDiv.className = 'status';
+                statusDiv.style.display = 'none';
+
+                const response = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email,
+                        username,
+                        password,
+                        firstName,
+                        lastName,
+                        gender,
+                        nationality,
+                        phone,
+                        dateOfBirth
+                    })
+                });
+
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Received non-JSON response:', text.substring(0, 200));
+                    throw new Error('Server returned non-JSON response');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    signupEmail = email;
+                    
+                    // Note: Wallet will be created after email verification
+                    if (data.note) {
+                        const noteInfo = document.createElement('div');
+                        noteInfo.style.cssText = 'background: #d1ecf1; border: 2px solid #17a2b8; padding: 15px; border-radius: 5px; margin: 20px 0;';
+                        noteInfo.innerHTML = `
+                            <p style="color: #0c5460; margin: 0;"><strong>ℹ️ Note:</strong></p>
+                            <p style="color: #0c5460; margin-top: 10px; font-size: 14px;">${data.note}</p>
+                        `;
+                        document.querySelector('.auth-container').insertBefore(noteInfo, statusDiv);
+                    }
+                    
+                    let message = data.message || 'Account created! Please check your email for verification code.';
+                    if (data.warning) {
+                        message += '\n\n' + data.warning;
+                    }
+                    statusDiv.textContent = message;
+                    statusDiv.className = 'status success';
+                    statusDiv.style.display = 'block';
+                    
+                    // Redirect to verification page after showing wallet info (include code in URL if email not configured)
+                    let redirectUrl = `/verify-email.html?email=${encodeURIComponent(email)}`;
+                    if (data.verificationCode) {
+                        redirectUrl += `&code=${data.verificationCode}`;
+                    }
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 10000); // Give user 10 seconds to save private key
+                } else {
+                    statusDiv.textContent = data.error || 'Signup failed';
+                    statusDiv.className = 'status error';
+                    statusDiv.style.display = 'block';
+                    signupBtn.disabled = false;
+                    signupBtn.textContent = 'Sign Up';
+                }
+            } catch (error) {
+                console.error('Error signing up:', error);
+                let errorMsg = 'Error: Failed to connect to server';
+                if (error.message) {
+                    errorMsg += ' - ' + error.message;
+                }
+                statusDiv.textContent = errorMsg;
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                signupBtn.disabled = false;
+                signupBtn.textContent = 'Sign Up';
+            }
+        }
+    </script>
+</body>
+</html>

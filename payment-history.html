@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment History - USDC Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .header-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu a.active {
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .notification-wrapper {
+            position: relative;
+        }
+
+        .btn-notification {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-notification:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 55px;
+            right: 0;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .btn-mark-all-read {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .btn-mark-all-read:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .notification-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notification-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .notification-item.unread {
+            background: #e7f3ff;
+            border-left-color: #dc3545;
+            font-weight: 600;
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: #dc3545;
+            border-radius: 50%;
+        }
+
+        .notification-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .notification-item .notification-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .notification-item .notification-message {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .notification-item .notification-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .notification-item .notification-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .notification-item .notification-delete:hover {
+            color: #dc3545;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-danger:hover {
+            background: white;
+            color: #dc3545;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .payment-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .payment-table th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .payment-table td {
+            padding: 18px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .payment-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .payment-table tbody tr:hover {
+            background: #f8f9fa;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .wallet-address-cell {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+            max-width: 200px;
+            word-break: break-all;
+        }
+
+        .amount-cell {
+            font-weight: bold;
+            color: #28a745;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        .tx-link {
+            color: #667eea;
+            text-decoration: none;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            transition: color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tx-link:hover {
+            color: #5568d3;
+            text-decoration: underline;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+            border: 2px solid #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .header-card {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .payment-table {
+                font-size: 12px;
+            }
+
+            .payment-table th,
+            .payment-table td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header-card">
+            <div class="header-left">
+                <h1>📊 Payment History</h1>
+            </div>
+            <div class="header-right">
+                <div class="nav-menu">
+                    <a href="/">Dashboard</a>
+                    <a href="/transfer.html">Send Payment</a>
+                    <a href="/payment-history.html" class="active">Payment History</a>
+                    <a href="/contacts.html">Contacts</a>
+                    <a href="/profile.html">Profile</a>
+                    <a href="/ai-chat.html">AI Assistant</a>
+                </div>
+                <div class="notification-wrapper">
+                    <button id="notificationBtn" class="btn-notification" onclick="toggleNotifications()">
+                        🔔
+                        <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div id="notificationPanel" class="notification-panel" style="display: none;">
+                        <div class="notification-header">
+                            <h3>Notifications</h3>
+                            <button onclick="markAllNotificationsAsRead()" class="btn-mark-all-read">Mark all as read</button>
+                        </div>
+                        <div id="notificationList" class="notification-list">
+                            <p class="empty-state">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div id="status" class="status"></div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <span style="font-weight: 600; color: #333; margin-right: 10px;">Filter:</span>
+                <button class="filter-btn active" onclick="filterPayments('all')" id="filterAll">All</button>
+                <button class="filter-btn" onclick="filterPayments('inbound')" id="filterInbound">📥 Inbound</button>
+                <button class="filter-btn" onclick="filterPayments('outbound')" id="filterOutbound">📤 Outbound</button>
+            </div>
+
+            <div id="paymentHistory">
+                <p class="loading">⏳ Loading payment history...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '';
+
+        // Load payment history on page load
+        window.addEventListener('load', async function() {
+            const authCheck = await checkAuthentication();
+            if (authCheck) {
+                await loadPaymentHistory('all');
+            }
+        });
+
+        // Check authentication
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Error checking authentication:', error);
+                window.location.href = '/login.html';
+                return false;
+            }
+        }
+
+        // Format amount
+        function formatAmount(amount) {
+            const num = parseFloat(amount);
+            if (isNaN(num)) return '0';
+            let formatted = num.toFixed(6);
+            formatted = formatted.replace(/\.?0+$/, '');
+            return formatted;
+        }
+
+        let currentFilter = 'all';
+
+        // Filter payments
+        window.filterPayments = function(filterType) {
+            currentFilter = filterType;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Set active button based on filter type
+            const buttonId = 'filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1);
+            const activeButton = document.getElementById(buttonId);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            } else {
+                console.error('Filter button not found:', buttonId);
+            }
+            
+            // Reload payment history with filter
+            loadPaymentHistory(filterType);
+        };
+
+        // Load payment history
+        async function loadPaymentHistory(filterType = 'all') {
+            try {
+                // Always include filter parameter for consistency
+                const url = `${API_BASE_URL}/api/payment-history${filterType === 'all' ? '' : '?filter=' + filterType}`;
+                
+                console.log('Loading payment history with filter:', filterType, 'URL:', url);
+                
+                const response = await fetch(url, {
+                    credentials: 'include'
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                console.log('Payment history response:', data);
+
+                if (data.success) {
+                    const historyDiv = document.getElementById('paymentHistory');
+                    if (!historyDiv) return;
+
+                    if (data.history && data.history.length > 0) {
+                        let html = '<table class="payment-table">';
+                        html += '<thead><tr>';
+                        html += '<th>Type</th>';
+                        html += '<th>Date & Time</th>';
+                        html += '<th>From Address</th>';
+                        html += '<th>To Address</th>';
+                        html += '<th style="text-align: right;">Amount</th>';
+                        html += '<th>Transaction Hash</th>';
+                        html += '</tr></thead><tbody>';
+
+                        data.history.forEach(payment => {
+                            const date = new Date(payment.created_at);
+                            const dateStr = date.toLocaleString();
+                            const fromAddr = payment.from_address;
+                            const toAddr = payment.to_address;
+                            const txHash = payment.transaction_hash;
+                            const amount = formatAmount(String(payment.amount));
+                            const transactionType = payment.transaction_type || 'outbound';
+                            const typeIcon = transactionType === 'inbound' ? '📥' : '📤';
+                            const typeLabel = transactionType === 'inbound' ? 'Inbound' : 'Outbound';
+                            const typeColor = transactionType === 'inbound' ? '#28a745' : '#667eea';
+
+                            html += '<tr>';
+                            html += `<td style="text-align: center;"><span style="color: ${typeColor}; font-weight: 600;">${typeIcon} ${typeLabel}</span></td>`;
+                            html += `<td>${dateStr}</td>`;
+                            html += `<td class="wallet-address-cell">${fromAddr}</td>`;
+                            html += `<td class="wallet-address-cell">${toAddr}</td>`;
+                            html += `<td class="amount-cell">${amount} USDC</td>`;
+                            html += `<td><a href="https://testnet.arc.network/tx/${txHash}" target="_blank" class="tx-link">${txHash.substring(0, 20)}...${txHash.substring(txHash.length - 10)}</a></td>`;
+                            html += '</tr>';
+                        });
+
+                        html += '</tbody></table>';
+                        historyDiv.innerHTML = html;
+                    } else {
+                        historyDiv.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <p>No ${filterType === 'all' ? '' : filterType + ' '}payment history found.</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading payment history:', error);
+                const historyDiv = document.getElementById('paymentHistory');
+                if (historyDiv) {
+                    historyDiv.innerHTML = '<p class="status error">Error loading payment history: ' + error.message + '</p>';
+                }
+            }
+        }
+
+        // Handle logout
+        window.handleLogout = async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+                window.location.href = '/login.html';
+            }
+        };
+    </script>
+    <script src="notifications.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            startNotificationPolling();
+        });
+    </script>
+</body>
+</html>

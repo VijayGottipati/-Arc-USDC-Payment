@@ -1,0 +1,9 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Database files should be treated as binary
+*.db binary
+*.db-journal binary
+*.db-wal binary
+*.db-shm binary
+
